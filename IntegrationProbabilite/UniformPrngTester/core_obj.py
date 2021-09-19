@@ -72,6 +72,10 @@ class UniformDistributionExperiment:
         self.mean = -1
         self.std = -1
 
+    def __str__(self):
+        return "Interval : [%s,%s) | Number of subdivisions : %s | Number of draws : %s" \
+               % (self.lower_bound, self.upper_bound, self.subdivision_nb, self.draw_number)
+
     def start(self) -> None:
         """
         Draws `draw_number` numbers uniformly between `lower_bound` and `upper_bound`, and counts where this number
@@ -83,9 +87,11 @@ class UniformDistributionExperiment:
             cup_id = math.floor(x * self.subdivision_nb)  # Find correct cup associated to the random number
             self.cups[cup_id] += 1
 
-    def compile(self) -> None:
+        self.__compile()
+
+    def __compile(self) -> None:
         """
-        Compiles various data about the experience, such as mean, standard deviation, etc.
+        (internal) Compiles various data about the experience, such as mean, standard deviation, etc.
         """
 
         self.__calculate_mean()
@@ -93,6 +99,10 @@ class UniformDistributionExperiment:
         pass
 
     def __calculate_mean(self) -> None:
+        """
+        (internal) Calculates the mean of the distribution
+        """
+
         mean = 0.0
         for i in range(self.subdivision_nb):
             avg_x = (2*i + 1)/2/self.subdivision_nb + self.lower_bound
@@ -101,6 +111,9 @@ class UniformDistributionExperiment:
         self.mean = mean/self.draw_number
 
     def __calculate_std(self) -> None:
+        """
+        (internal) Calculates the standard deviation of the distribution
+        """
         var = 0.0
         for i in range(self.subdivision_nb):
             avg_x = (2 * i + 1) / 2 / self.subdivision_nb + self.lower_bound
@@ -109,14 +122,22 @@ class UniformDistributionExperiment:
         self.std = math.sqrt(var - self.mean**2)
 
     def get_expected_mean(self) -> float:
+        """
+        Calculates the expected mean of the distribution
+        """
         return (self.lower_bound + self.upper_bound)/2
 
     def get_expected_std(self) -> float:
+        """
+        Calculates the expected standard deviation of the distribution
+        """
         return math.sqrt((self.upper_bound - self.lower_bound)**2 / 12)
 
 
 exp = UniformDistributionExperiment(lower_bound=0, upper_bound=1, draw_nb=10_000, subdivision_nb=10)
 exp.start()
-exp.compile()
-print(exp.get_expected_mean(), exp.mean)
-print(exp.get_expected_std(), exp.std)
+print(exp)
+print("Mean : {:.4} (expected {:.4} | error : {:.4%})".format(
+    exp.mean, exp.get_expected_mean(), (exp.mean-exp.get_expected_mean())/exp.mean))
+print("Standard deviation : {:.4} (expected {:.4} | error : {:.4%})".format(
+    exp.std, exp.get_expected_std(), (exp.std-exp.get_expected_std())/exp.std))

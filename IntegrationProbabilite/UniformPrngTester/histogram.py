@@ -1,5 +1,4 @@
 import numpy as np
-import math
 import random as rd
 
 import matplotlib.pyplot as plt
@@ -9,7 +8,7 @@ import matplotlib.animation as animation
 DRAW_NB = 10_000
 SUBDIVISION_NB = 10
 
-# Code copied from https://matplotlib.org/stable/gallery/animation/animated_histogram.html
+# Code roughly copied from https://matplotlib.org/stable/gallery/animation/animated_histogram.html
 
 # Fixing bin edges
 HIST_BINS = np.linspace(0, 1, SUBDIVISION_NB + 1)
@@ -40,5 +39,4 @@ _, _, bar_container = ax.hist(draws, HIST_BINS, lw=1,
 ax.set_ylim(top=2.0 / SUBDIVISION_NB)  # set safe limit to ensure that all data is visible.
 ani = animation.FuncAnimation(fig, prepare_animation(bar_container), DRAW_NB, interval=1,
                               repeat=False, blit=True)
-
 plt.show()

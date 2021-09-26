@@ -8,13 +8,13 @@ from typing import Callable, Tuple
 
 def test_dichotomie(x: float) -> float:
     # A tester sur l'intervalle [-1, 1]
-    # Valeur de convergence attendu : 0.739085
+    # Valeur de convergence attendue : 0.739085
     return m.cos(x) - x
 
 
 def test_pt_fixe(x: float) -> float:
     # A tester sur dans l'intervalle ]-inf, 12.71]
-    # Valeur de convergence attendu : 1.295855
+    # Valeur de convergence attendue : 1.295855
     return m.exp(x/5.)
 
 

@@ -92,4 +92,6 @@ it = MODE.interval()  # Récupération d'un intervalle potentiellement plus fin 
 plt.plot(x_i, X, 'r.', it, MODE.u(it), 'b-')
 plt.xlabel('Position')
 plt.ylabel('Value of u')
+plt.text(0, 1, "Max abs error : {:.2e}".format(max(MODE.u(x_i)-X, key=abs)))
 plt.show()
+

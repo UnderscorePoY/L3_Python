@@ -31,7 +31,7 @@ class ModeInterface:
         pass
 
     def interval(self):
-        return np.linspace(start=0., end=1., num=self.step_nb + 1, endpoint=True)
+        return np.linspace(start=0., stop=1., num=self.step_nb + 1, endpoint=True)
 
     def sanitize(self, x: Any) -> Any:
         if isinstance(x, list):

@@ -19,6 +19,7 @@ def _factorisation_LU(
     Ainsi A = LU, et la résolution de Ax = b se décompose comme suit :
      1. Ly = b d'inconnue y, avec y = Ux
      2. Ux = y d'inconnue x
+
     :param A: la matrice à factoriser suivant la décomposition LU.
     :return: la matrice `A` factorisée.
     """
@@ -45,6 +46,7 @@ def factorisation_LU(
 ) -> list[list[float]]:
     """
     Factorise la matrice carrée `A` suivant la décomposition LU.
+
     :param A: la matrice à factoriser.
     :param keep: (default=False) si la matrice doit être gardée intacte. Sinon, les coefficients de L et U seront
     écrits dans la matrice `A` initiale  pour économiser de l'espace mémoire.
@@ -65,6 +67,7 @@ def _descente(
 ) -> list[float]:
     """
     Applique l'étape de descente à l'équation Ly = b d'inconnue y, avec y = Ux.
+
     :param A: la matrice provenant de la factorisation LU.
     :param b: le vecteur second membre.
     :return: le vecteur y intermédiaire.
@@ -91,6 +94,7 @@ def descente(
 ) -> list[float]:
     """
     Applique l'étape de descente à l'équation Ly = b d'inconnue y, avec y = Ux.
+
     :param A: la matrice provenant de la factorisation LU.
     :param b: le vecteur second membre.
     :param keep: (default=False) si le vecteur doit être gardé intacte. Sinon, les coefficients du vecteur seront
@@ -112,6 +116,7 @@ def remontee(
 ) -> list[float]:
     """
     Applique l'étape de remontée à l'équation Ux = y
+
     :param A : la matrice provenant de la factorisation LU.
     :param y: le vecteur second membre intermédiaire.
     :return: la solution x à l'équation Ux = y d'inconnue x.
@@ -141,6 +146,7 @@ def gauss_sans_permutation(
     Sans permutation, certaines matrices ne peuvent pas être résolues avec cette méthode car les pivots peuvent être
     nuls, et entrainer une division par zéro.
     Dès lors qu'une exception `ZeroDivisionError` est levée, A est une telle matrice problématique.
+
     :param A: la matrice du système linéaire d'équations.
     :param b: le vecteur second membre.
     :param keep: si les objets initiaux doivent être conservés intactes.

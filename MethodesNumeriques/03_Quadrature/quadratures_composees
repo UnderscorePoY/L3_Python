@@ -166,32 +166,17 @@ class Test_Quadrature:
         print("\tValeur exacte : ", self.exacte)
         for key, methode in METHODES.items():
             print("\t{} : {}".format(methode[METHODE_DESC], methode[METHODE_FUNC]))
-        #print("\tRAD : ", self.rad_comp)
-        #print("\tPoint milieu : ", self.pm_comp)
-        #print("\tTrapèzes : ", self.tz_comp)
-        #print("\tSimpson : ", self.simpson_comp)
+
         
     def erreur_absolue(self):
         """ Retourne l'erreur absolue en valeurs absolue par rapport à la valeur exacte. """
         return {key: np.abs(self.dic_approx[key]-self.exacte) for key, methode in METHODES.items()}
-        #{
-        #    'RAG': np.abs(self.rag_comp - self.exacte),
-        #    'RAD': np.abs(self.rad_comp - self.exacte),
-        #    'PM': np.abs(self.pm_comp - self.exacte),
-        #    'TZ': np.abs(self.tz_comp - self.exacte),
-        #    'Simpson': np.abs(self.simpson_comp - self.exacte),
-        #}
-        
+ 
+       
     def erreur_relative(self):
         """ Retourne l'erreur relative en valeurs absolue par rapport à la valeur exacte. """
         return {key: np.abs(self.dic_approx[key]-self.exacte)/np.abs(self.exacte) for key, methode in METHODES.items()}
-        #{
-        #    'RAG': np.abs(self.rag_comp - self.exacte)/self.exacte,
-        #    'RAD': np.abs(self.rad_comp - self.exacte)/self.exacte,
-        #    'PM': np.abs(self.pm_comp - self.exacte)/self.exacte,
-        #    'TZ': np.abs(self.tz_comp - self.exacte)/self.exacte,
-        #    'Simpson': np.abs(self.simpson_comp - self.exacte)/self.exacte,
-        #}
+
     
 class Func:
     """ Classe de fonctions comprenant une fonction f et une primitive F. """

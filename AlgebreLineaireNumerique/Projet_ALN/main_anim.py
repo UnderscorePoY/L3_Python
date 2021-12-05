@@ -51,7 +51,7 @@ B[0] = Tmax
 # print(B)
 
 # Préparation de l'affichage graphique
-x_i = [i * dx for i in range(Nx + 2)]  # Positions des points à l'intérieur de l'intervalle
+x_i = [i * dx * 100 for i in range(Nx + 2)]  # Positions des points à l'intérieur de l'intervalle
 # print(x_i)
 it = np.linspace(start=0., stop=1., num=10_000 + 1, endpoint=True)
 
@@ -59,16 +59,21 @@ it = np.linspace(start=0., stop=1., num=10_000 + 1, endpoint=True)
 
 fig = plt.figure()
 line, = plt.plot([], [])
-plt.xlim(0.02, 0.021)  # plt.xlim(0, R)
-plt.ylim(59.0, 64.0)   # plt.ylim(Tamb, Tmax)
-plt.xlabel('Position (m)')
+plt.xlim(0, R*100)
+plt.ylim(Tamb, Tmax)
+#plt.xlim(2.0, 2.1)
+#plt.ylim(58.5, 63.5)
+plt.xlabel('Position (cm)')
 plt.ylabel('Temperature (°C)')
 
 for i in range(Nt):
     X = sparceM @ B
     B = X.copy()
-    #if i % 1_000_000 == 0:
-plt.plot(x_i, X, 'b')
+    #if i % 50_000 == 0:
+    #    plt.plot(x_i, X, 'b')
+plt.plot(x_i, X, 'b,', label="Solution approchée")
+plt.plot(x_i, [Tmax-(Tmax-Tamb)*x/(R*100) for x in x_i], "k", label="Solution exacte")
+plt.legend()
 plt.show()
 
 '''

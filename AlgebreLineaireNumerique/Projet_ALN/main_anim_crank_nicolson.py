@@ -11,8 +11,8 @@ R, tmax = 0.065, 60.  # en mètres, en secondes
 D = 98.8e-6  # Diffusivité thermique de l'aluminium
 Tmax = 80.  # °C
 Tamb = 20.  # °C
-Nx_lst = np.array([1_000])
-Nt_lst = np.array([2_811_768//2])
+Nx_lst = np.array([10_000])
+Nt_lst = np.array([1_000_000//2])
 
 for Nx in Nx_lst:
     for Nt in Nt_lst:
@@ -67,31 +67,41 @@ for Nx in Nx_lst:
         x_i = [i * dx * 100 for i in range(Nx + 2)]  # Positions des points à l'intérieur de l'intervalle
         fig = plt.figure()
         line, = plt.plot([], [])
+        #plt.xlim(2., 2.1)
+        #plt.ylim(58, 64)
         plt.xlim(0, R * 100)
         plt.ylim(Tamb, Tmax)
         plt.xlabel('Position (cm)')
         plt.ylabel('Temperature (°C)')
+        plt.plot(x_i, [Tmax - (Tmax - Tamb) * x / (R * 100) for x in x_i], "k,")
+
 
         for i in range(Nt):
             Y = E @ B
-            X = LU.solve(Y)
-            if i % 50_000 == 0:
+            B = LU.solve(Y)
+            if i % (Nt_lst//50) == 0:
                 print(i)
-                plt.plot(x_i, X, 'b')
-            B = X.copy()
+                plt.plot(x_i, B, 'b')
+            #B = X.copy()
         plt.show()
-        '''
-        def animate(i):
-            global LU, B, X
-            X = LU.solve(B)
 
-            if i % 1_000 == 0:
-                print(i)
-                plt.plot(x_i, X, 'b')
-            #line.set_data(x_i, X)
+
+        '''
+        batch = 50_000
+        def animate(i):
+            global LU, B, E, X, batch
+
+            for _ in range(batch):
+                Y = E @ B
+                X = LU.solve(Y)
+                B = X.copy()
+
+            #if i % 1_000 == 0:
+            # print(i)
+            plt.plot(x_i, X, 'b')
+            line.set_data(x_i, X)
             # print(x_i)
             #print(X)
-            B = X.copy()
 
             # filename = folder+'/{:0>9}.png'.format(i)
 
@@ -99,9 +109,9 @@ for Nx in Nx_lst:
             # plt.savefig(filename)
 
             return line,
+
+
+        ani = animation.FuncAnimation(fig, animate, frames=Nt//batch, blit=True, interval=.05, repeat=False)
         '''
-
-        # ani = animation.FuncAnimation(fig, animate, frames=Nt, blit=True, repeat=False)#interval=.5, repeat=False)
-
         # time.sleep(5)
-        # plt.show()
+        plt.show()

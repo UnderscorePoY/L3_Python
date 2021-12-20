@@ -10,16 +10,22 @@ R, tmax = 0.065, 60.  # en mètres, en secondes
 D = 98.8e-6  # Diffusivité thermique de l'aluminium
 Tmax = 80.  # °C
 Tamb = 20.  # °C
-Nx_list = range(1_000_000, 5_000_001, 1_000_000)
-Nt = 3_000_000_000_000
+Nx = 10_000
+Nt_list = np.array([100, 200, 300, 400, 500, 700,
+                    1000, 2000, 3000, 4000, 5000, 7000,
+                    10000, 20000, 30000, 40000, 50000, 70000,
+                    ])  # [1_000_000, 500_000, 200_000, 100_000, 50_000, 20_000, 10_000, 5_000, 2_000, 1_000, 500, 200, 100]
 
 temps_LU_simple = []
 temps_LU_tridiagonal = []
 temps_superLU = []
 
+erreurs = []
 
-for Nx in Nx_list:
-    dx = R / (Nx + 1)
+dx = R / (Nx + 1)
+x_i = [i * dx * 100 for i in range(Nx + 2)]
+temperatures_attendues = [Tmax - (Tmax - Tamb) * x / (R * 100) for x in x_i]
+for Nt in Nt_list:
     dt = tmax / (Nt + 1)
     beta = D * dt / dx ** 2
     print("beta={}".format(beta))
@@ -84,22 +90,33 @@ for Nx in Nx_list:
     # sparce superLU
     M = csc_matrix(M)
     LU = sla.splu(M)
-    start_time = time.process_time()
-    X = LU.solve(B)
-    end_time = time.process_time()
-    temps_superLU = np.append(temps_superLU, end_time - start_time)
-    print("superLU {} done - {}s".format(Nx, end_time - start_time))
+    #start_time = time.process_time()
+    for i in range(Nt):
+        if i % 1_000 == 0:
+            print(i)
+        X = LU.solve(B)
+        B = X.copy()
+    #end_time = time.process_time()
+    #temps_superLU = np.append(temps_superLU, end_time - start_time)
+    #print("superLU {} done - {}s".format(Nx, end_time - start_time))
 
+    # Mesure de l'erreur en température
+    #plt.plot(x_i, B, 'b')
+    #plt.plot(x_i, temperatures_attendues, 'k')
+    #plt.show()
 
+    #plt.plot(temperatures_attendues-B)
+    erreurs = np.append(erreurs, max(abs(temperatures_attendues-B)))
 
+print(erreurs)
 # slope_LU_simple, _ = np.polyfit(np.log(Nx_list), np.log(temps_LU_simple), 1)
 # slope_LU_tridiagonal, _ = np.polyfit(np.log(Nx_list), np.log(temps_LU_tridiagonal), 1)
-slope_superLU, _ = np.polyfit(np.log(Nx_list), np.log(temps_superLU), 1)
+slope_erreurs, _ = np.polyfit(np.log(tmax/(Nt_list+1)), np.log(erreurs), 1)
 
-plt.xlabel('Nx')
-plt.ylabel("Durée d'exécution [en s]")
+plt.xlabel('dt')
+plt.ylabel("Erreur [en °C]")
 # plt.loglog(Nx_list, temps_LU_simple, 'r', label="LU simple factorisation (ordre={:.3f})".format(slope_LU_simple))
-plt.loglog(Nx_list, temps_superLU, 'c', label="sparce superLU descente-remontée (ordre={:.3f})".format(slope_superLU))
+plt.loglog(tmax/(Nt_list+1), erreurs, 'm', label="Ordre de l'erreur en temps = {:.3f}".format(slope_erreurs))
 plt.legend()
 # plt.plot(np.log(Nx_lst), np.log(y_predicted), 'b')
 plt.show()

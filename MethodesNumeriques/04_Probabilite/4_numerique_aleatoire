@@ -1,0 +1,302 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Dec 14 09:43:20 2021
+
+@author: thomas.bescond
+"""
+
+import random
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.special import factorial
+
+
+# 1. MODULE RANDOM
+
+'''
+seed = 0x42
+
+nb_tirages = 10
+random.seed(seed)
+
+tirages_uniformes = []
+for _ in range(nb_tirages):
+    tirages_uniformes.append(random.random())
+print(tirages_uniformes)
+'''
+
+'''
+mean = 0.0
+scale = 1.0
+tirage_gauss = random.gauss(mean, scale)
+print(tirage_gauss)
+'''
+
+# 2. SIMULATION DE LOIS DISCRETES
+# 2. 1 Loi de Bernoulli
+def tirage_bernoulli(p):
+    """ Génère un nombre aléatoirement selon une loi de Bernoulli de paramètre p dans ]0,1[."""
+    
+    if(p <= 0 or p >= 1):
+        raise ValueError("Le paramètre p doit être dans l'intervalle ]0,1[")
+        
+    tirage = random.random()
+    succes = -1
+    
+    if tirage < p:
+        succes = 1
+    else:
+        succes = 0
+        
+    return succes
+
+'''
+nb_tirages = 10_000
+p = 0.7
+
+# Vérification de la loi des grand nombres pour Xi suivant une loi de Bernoulli de paramètre p
+tirages_bernoulli = []
+for _ in range(nb_tirages):
+    tirages_bernoulli.append(tirage_bernoulli(0.7))
+
+plt.hist(tirages_bernoulli, [0, 1, 2], density=True)
+plt.show()
+'''
+
+# 2. 2 Loi binomiale
+def tirage_binomiale(n, p):
+    """ Génère un nombre aléatoirement selon une loi binomiale de paramètres
+    n dans IN et p dans ]0,1[."""
+    
+    if(not isinstance(n, int)):
+        raise ValueError("Le paramètre n doit être un entier naturel.")
+    
+    S = 0
+    for _ in range(n):
+        S += tirage_bernoulli(p)
+        
+    return S
+
+'''
+# Vérification de la loi des grand nombres pour Xi suivant une loi binomiale de paramètres n et p
+nb_tirages = 10_000
+n = 5
+p = 0.6
+
+tirages_binomiale = []
+for _ in range(nb_tirages):
+    tirages_binomiale.append(tirage_binomiale(n, p))
+
+plt.hist(tirages_binomiale, [i for i in range(n+2)], density=True)
+plt.show()
+'''
+
+# 2. 3 Loi géométrique
+def tirage_geometrique(p):
+    """ Génère un nombre aléatoirement selon une loi géométrique de paramètre p dans ]0,1[."""
+    
+    nb_tirages = 0
+    while tirage_bernoulli(p) == 0:
+        nb_tirages += 1
+        
+    return nb_tirages
+
+'''
+# Vérification de la loi des grand nombres pour Xi suivant une loi géométrique de paramètre p
+nb_tirages = 10_000
+p = 0.3
+
+tirages_geometrique = []
+for _ in range(nb_tirages):
+    tirages_geometrique.append(tirage_geometrique(p))
+
+plt.hist(tirages_geometrique, [i for i in range(max(tirages_geometrique)+2)], density=True)
+plt.show()
+'''
+
+'''
+# Estimation de l'espérance d'une loi géométrique
+N = 10_000
+p = 0.5
+tirages_geometrique = [tirage_geometrique(p) for _ in range(N)]
+print(sum(tirages_geometrique)/N)
+# On s'attend à 2 mais on obtient 1, bizarre ...
+'''
+
+# 2. 4 Loi finie
+def loi_finie(valeurs, probabilites):
+    """ Génère un nombre aléatoirement selon une loi discrète finie dont les
+    valeurs et les probabilités associées sont fournies en argument. """
+    
+    if(len(valeurs) != len(probabilites)):
+        raise ValueError("Les deux tableaux doivent avoir la même taille.")
+    if(sum(probabilites) != 1.):
+        raise ValueError("La somme des probabilités doit être égale à 1.")
+    if(not sorted(valeurs)):
+        raise ValueError("Les valeurs doivent être triées par ordre croissant.")
+        
+    tirage = random.random()
+    S = 0
+    for val, proba in zip(valeurs, probabilites):
+        S += proba
+        if tirage < S:
+            return val
+    
+    raise Exception("loi_finie doit retourner une valeur (S = {}.".format(S))
+   
+'''
+N = 10_000
+valeurs = [1, 2, 3, 4]
+probabilites = [1/3, 1/6, 1/4, 1/4]
+tirages_loi_finie = [loi_finie(valeurs, probabilites) for _ in range(N)]
+
+plt.hist(tirages_loi_finie, valeurs.append(max(valeurs)+1))
+plt.show()
+'''
+
+# 2. 5 Loi de Poisson
+def loi_poisson(lambdaa):
+    """ Génère un nombre aléatoirement selon une loi de Poisson de paramètre lambda dans IR+*. """
+    
+    if(lambdaa <= 0):
+        raise ValueError("lambdaa doit être strictement positif.")
+    
+    tirage = random.random()
+    S = np.exp(-lambdaa)
+    N = 0
+    
+    while S < tirage:
+        N += 1
+        S += np.exp(-lambdaa)*lambdaa**N/factorial(N)
+    
+    return N
+
+'''
+N = 10_000
+lambdaa = 4
+tirages_poisson = [loi_poisson(lambdaa) for _ in range(N)]
+
+plt.hist(tirages_poisson, [i for i in range(max(tirages_poisson)+2)], density=True)
+plt.show()
+'''
+
+
+# 3 SIMULATION DE LOIS A DENSITE
+# 3. 1 Loi uniforme
+
+def loi_uniforme(a, b):
+    """ Génère un nombre aléatoirement selon une loi uniforme sur [a,b]."""
+    
+    if(a >= b):
+        raise ValueError("a doit être strictement plus petit que b.")
+    
+    tirage = random.random()
+    return a + (b-a)*tirage
+
+# 3. 2 Loi exponentielle
+
+def loi_exponentielle(lambdaa):
+    """ Génère un nombre aléatoirement selon une loi exponentielle de paramètre lambda dans IR+*. """
+    tirage = random.random()
+    
+    return -1/lambdaa * np.log(1 - tirage)
+
+
+'''
+N = 10_000
+lambdaa = 2
+tirages_exponentielle = [loi_exponentielle(lambdaa) for _ in range(N)]
+
+# Affichage des tirages exponentiels
+k = 100
+plt.hist(tirages_exponentielle, k, density=True)
+
+# Affichage de la densité théorique de la loi exponentielle
+x = np.linspace(0, 5, 200)
+y = [2*np.exp(-2*x0) for x0 in x]
+plt.plot(x, y, color="red")
+
+plt.show()
+'''
+
+# 3. 3 Méthode de rejet
+
+# Fonction utilisée
+def loi_cos_f(x):
+    if(x < -1 or x > 1):
+        return 0
+
+    return 1/2*(1+np.cos(np.pi*x))
+
+def loi_cos():
+    a, b = -1, 1
+    M = 1  # majorant de f sur l'intervalle [a,b]
+
+    while True:
+        x = loi_uniforme(a, b)
+        y = loi_uniforme(0, M)
+        
+        if y <= loi_cos_f(x): break
+    
+    return x
+
+'''
+N = 10_000
+tirages_cos = [loi_cos() for _ in range(N)]
+
+# Affichage des tirages cos
+k = 100
+plt.hist(tirages_cos, k, density=True)
+
+# Affichage de la densité théorique de la loi cos
+x = np.linspace(-1, 1, 200)
+y = [loi_cos_f(x0) for x0 in x]
+plt.plot(x, y, color="red")
+
+plt.show()
+'''
+
+# 3. 4 Loi normale centrée réduite
+
+def loi_normale_centree_reduite():
+    tirage1 = random.random()
+    tirage2 = random.random()
+    
+    return np.sqrt(-2*np.log(tirage1))*np.cos(2*np.pi*tirage2)
+    # return np.sqrt(-2*np.log(tirage1))*np.sin(2*np.pi*tirage2)
+
+'''
+N = 10_000
+tirages_normale_centree_reduite = [loi_normale_centree_reduite() for _ in range(N)]
+
+# Affichage des tirages cos
+k = 100
+plt.hist(tirages_normale_centree_reduite, k, density=True)
+
+# Affichage de la densité théorique de la loi cos
+x = np.linspace(-5, 5, 200)
+y = [1/np.sqrt(2*np.pi)*np.exp(-(x0**2)/2) for x0 in x]
+plt.plot(x, y, color="red")
+
+plt.show()
+'''
+
+# 4 METHODES DE MONTE-CARLO
+
+# 4. 1 Calcul d'intégrales
+
+def monte_carlo_integrale(f, a, b, n):
+    S = 0
+    for _ in range(n):
+        tirage = loi_uniforme(a, b)
+        S += f(tirage)
+    return S/n
+
+a, b = 0, 1
+n = 1_000
+f = lambda x: 1/(1+x**2)
+
+print(monte_carlo_integrale(f, a, b, n))
+print("Valeur attendue : {}".format(np.pi/4))
+        

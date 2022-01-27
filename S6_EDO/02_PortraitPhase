@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Jan 27 14:41:43 2022
+
+@author: thomas.bescond
+"""
+
+from scipy.linalg import expm
+from scipy.integrate import solve_ivp
+import numpy as np
+import matplotlib.pyplot as plt
+
+def in_range(x, y, x_min, x_max, y_min, y_max):
+    return x_min <= x <= x_max and y_min <= y <= y_max
+
+
+    
+x_low, x_high = -5, 5
+y_low, y_high = -5, 5
+
+for alpha in list(np.linspace(-2, 2, 5)):
+
+    A = np.array([
+         [ alpha, 1],
+         [ -1, alpha]
+    ])
+        
+        
+    for x0 in list(np.linspace(-1.0, 1.0, num=10)):
+        for y0 in list(np.linspace(-1.0, 1.0, num=10)):
+            X0 = [x0, y0]
+            xs, ys = [], []
+            
+            for t in list(np.linspace(0.0, 10.0, num=100)):
+                expA = expm(t*A)
+                sol = expA @ X0
+                
+                x, y = sol[0], sol[1]
+                if(not in_range(x,y, x_low, x_high, y_low, y_high)):
+                    break
+                
+                xs.append(sol[0])
+                ys.append(sol[1])
+            
+            mid_idx = len(xs)//2
+            if(mid_idx == 0):
+                break
+            
+            # Arrows are broken anyways
+            mid_x = xs[0]
+            mid_y = ys[0]
+            mid_dx = xs[1] - xs[0]
+            mid_dy = ys[1] - ys[0]
+            
+            # Resize
+            arrow_size = np.sqrt(mid_dx**2 + mid_dy**2)
+            mid_dx = mid_dx / arrow_size / 20
+            mid_dy = mid_dy / arrow_size / 20
+            
+            # print(mid_x, mid_y, mid_dx, mid_dy)
+            
+            plt.axis('equal')
+            plt.plot(xs,ys)
+            plt.arrow(mid_x, mid_y, mid_dx, mid_dy, width=0.01, head_width = 0.05, head_length = 0.05)
+    
+    plt.show()

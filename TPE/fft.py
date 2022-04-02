@@ -105,11 +105,11 @@ class Animator:
 
     def time_step(self):
         while self.time < self.heat_eqn.times[-1]:
+            self.time_text.set_text('Elapsed time: {:6.2f} s'.format(self.time))
             if self.paused:
                 yield self.heat_eqn.u_v
             else:
                 self.time += self.heat_eqn.dt * self.skip_step
-                self.time_text.set_text('Elapsed time: {:6.2f} s'.format(self.time))
                 yield self.heat_eqn.update(self.skip_step)
 
     def animate(self):
@@ -120,45 +120,40 @@ class Animator:
         self.paused = not self.paused
 
 
-def no_CFL(rand=False):
-    """ Provides an unstable setup for the theta-schema of the heat equation. """
+def condition(D, T, Nt, Nx, theta, f0=None, rand=False):
     dic = {
-        "D": 0.01093,
-        "T": 15.,
-        "Nt": 2_000,
-        "Nx": 100,
-        "theta": 0.2
+        "D": D,
+        "T": T,
+        "Nt": Nt,
+        "Nx": Nx,
+        "theta": theta
     }
-    if rand:
-        add_random(dic)
+    if f0 is not None:
+        dic["f0"] = f0
+    elif rand:
+        dic["f0"] = lambda x: [random.uniform(-1.5, 1.5) for _ in x]
 
     return dic
+
+
+def no_CFL(rand=False):
+    """ Provides an unstable setup for the theta-scheme of the heat equation. """
+    return condition(D=0.01093, T=15., Nt=2_000, Nx=100, theta=0.2, rand=rand)
 
 
 def CFL(rand=False):
-    """ Provides a stable setup for the theta-schema of the heat equation. """
-    dic = {
-        "D": 0.0108,
-        "T": 15.,
-        "Nt": 2_000,
-        "Nx": 100,
-        "theta": 0.2,
-    }
-    if rand:
-        add_random(dic)
-
-    return dic
+    """ Provides a stable setup for the theta-scheme of the heat equation. """
+    return condition(D=0.01080, T=15., Nt=2_000, Nx=100, theta=0.2, rand=rand)
 
 
-def add_random(dic):
-    """ Adds randomized initial condition to a setup. """
-    dic["f0"] = lambda x: [random.uniform(-1.5, 1.5) for _ in x]
-    return dic
+def CFL_reg(rand=False):
+    """ Provides a stable setup for the theta-scheme of the heat equation. """
+    return condition(D=0.01080, T=15., Nt=2_000, Nx=100, theta=0.7, rand=rand)
 
 
 def main():
-    random.seed(0x1957)
-    conditions = CFL(rand=True)
+    random.seed(0xA1957)
+    conditions = no_CFL(rand=False)
     heat_eqn = HeatEquationFFT(**conditions)
     animator = Animator(heat_eqn, skip_step=5)
     animator.animate()
